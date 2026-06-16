@@ -1,0 +1,27 @@
+# Godot
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# Godot C# / .NET
+.mono/
+bin/
+obj/
+mono_crash.*.json
+*.sln.DotSettings.user
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
