@@ -1,4 +1,5 @@
 using Godot;
+using PetriSeed.Environment;
 
 namespace PetriSeed.Simulation;
 
@@ -11,6 +12,10 @@ public partial class SimulationManager : Node2D
     private ulong _configuredSeed = DefaultSeed;
     private FixedTickLoop _tickLoop = new(DefaultTicksPerSecond);
     private RandomNumberService _random = new(DefaultSeed);
+    private NutrientFieldConfig _nutrientFieldConfig = new();
+    private NutrientField? _nutrientField;
+    private NutrientVisualization? _nutrientVisualization;
+    private Label? _nutrientStatsLabel;
 
     [Export]
     public bool IsPaused { get; set; }
@@ -47,8 +52,14 @@ public partial class SimulationManager : Node2D
     {
         _tickLoop = new FixedTickLoop(_configuredTicksPerSecond);
         _random = new RandomNumberService(_configuredSeed);
+        _nutrientFieldConfig = new NutrientFieldConfig();
+        _nutrientField = new NutrientField(_nutrientFieldConfig, _random);
+        _nutrientVisualization = GetNodeOrNull<NutrientVisualization>("NutrientVisualization");
+        _nutrientVisualization?.Initialize(_nutrientField, _nutrientFieldConfig);
+        _nutrientStatsLabel = GetNodeOrNull<Label>("DebugOverlay/NutrientStatsLabel");
 
-        GD.Print($"PetriSeed Phase 0 ready. Seed={_random.Seed}, TickRate={_tickLoop.TicksPerSecond:0.##}/s");
+        GD.Print($"PetriSeed Phase 1A ready. Seed={_random.Seed}, TickRate={_tickLoop.TicksPerSecond:0.##}/s");
+        PrintNutrientTelemetry();
     }
 
     public override void _Process(double delta)
@@ -67,9 +78,32 @@ public partial class SimulationManager : Node2D
 
     private void RunSimulationTick()
     {
-        if (_tickLoop.TickCount % 20UL == 0UL)
+        _nutrientField?.Tick();
+        _nutrientVisualization?.OnSimulationTick();
+
+        if (_tickLoop.TickCount % (ulong)_nutrientFieldConfig.TelemetryIntervalTicks == 0UL)
         {
-            GD.Print($"Simulation tick {_tickLoop.TickCount}; rng-sample={_random.NextFloat():0.000}");
+            PrintNutrientTelemetry();
+        }
+    }
+
+    private void PrintNutrientTelemetry()
+    {
+        if (_nutrientField is null)
+        {
+            return;
+        }
+
+        var message =
+            $"Tick {_tickLoop.TickCount}: total nutrients={_nutrientField.TotalNutrients:0.000}, " +
+            $"average={_nutrientField.AverageNutrients:0.000}, " +
+            $"diffusion delta={_nutrientField.DiffusionDeltaLastTick:0.000}";
+
+        GD.Print(message);
+
+        if (_nutrientStatsLabel is not null)
+        {
+            _nutrientStatsLabel.Text = message;
         }
     }
 }

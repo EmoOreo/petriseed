@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://petriseed_main"]
+[gd_scene load_steps=3 format=3 uid="uid://petriseed_main"]
 
 [ext_resource type="Script" path="res://src/simulation/SimulationManager.cs" id="1_simulation_manager"]
+[ext_resource type="Script" path="res://src/environment/NutrientVisualization.cs" id="2_nutrient_visualization"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_simulation_manager")
@@ -15,3 +16,15 @@ offset_top = -180.0
 offset_right = 320.0
 offset_bottom = 180.0
 color = Color(0.08, 0.13, 0.12, 1)
+
+[node name="NutrientVisualization" type="Node2D" parent="."]
+script = ExtResource("2_nutrient_visualization")
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+
+[node name="NutrientStatsLabel" type="Label" parent="DebugOverlay"]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 620.0
+offset_bottom = 48.0
+text = "Nutrient telemetry initializing..."
