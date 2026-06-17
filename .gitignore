@@ -1,8 +1,11 @@
 # Godot
 .godot/
 .import/
+.fennara/
 export.cfg
 export_presets.cfg
+*.uid
+*.old
 
 # Godot C# / .NET
 .mono/

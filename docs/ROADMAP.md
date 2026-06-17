@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap follows the clean-room reuse plan and keeps Phase 0 intentionally small.
+This roadmap follows the clean-room reuse plan. Phase 1A establishes the first field simulation layer without adding organisms.
 
 ## Phase 0: Project Shell
 
@@ -10,12 +10,26 @@ This roadmap follows the clean-room reuse plan and keeps Phase 0 intentionally s
 - Seedable RNG service.
 - Clean-room documentation and source folders.
 
-## Phase 1: Fields
+## Phase 1A: Nutrient Field
 
-- Nutrient field grid.
+- Deterministic nutrient cell grid.
+- Cell nutrient amount, regeneration rate, and decay rate.
+- Fixed-tick regeneration, decay, and neighbor diffusion.
+- Seeded initial nutrient patches.
+- Nutrient density visualization.
+- Debug telemetry for total nutrients, average nutrients, and diffusion movement.
+
+## Phase 1B: Field Tools and Debug Controls
+
 - Paintable food.
-- Diffusion and decay.
-- Debug visualization.
+- Field reset controls.
+- Configurable display modes.
+
+## Phase 1C: Additional Fields
+
+- Toxin grid.
+- Waste grid.
+- Heat and pH stress placeholders.
 
 ## Phase 2: Microbes
 
