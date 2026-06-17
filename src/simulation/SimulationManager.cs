@@ -1,5 +1,6 @@
 using Godot;
 using PetriSeed.Environment;
+using PetriSeed.Organisms;
 
 namespace PetriSeed.Simulation;
 
@@ -16,6 +17,9 @@ public partial class SimulationManager : Node2D
     private NutrientField? _nutrientField;
     private NutrientVisualization? _nutrientVisualization;
     private Label? _nutrientStatsLabel;
+    private PassiveMicrobeConfig _passiveMicrobeConfig = new();
+    private PassiveMicrobeSimulation? _passiveMicrobeSimulation;
+    private PassiveMicrobeVisualization? _passiveMicrobeVisualization;
 
     [Export]
     public bool IsPaused { get; set; }
@@ -57,8 +61,13 @@ public partial class SimulationManager : Node2D
         _nutrientVisualization = GetNodeOrNull<NutrientVisualization>("NutrientVisualization");
         _nutrientVisualization?.Initialize(_nutrientField, _nutrientFieldConfig);
         _nutrientStatsLabel = GetNodeOrNull<Label>("DebugOverlay/NutrientStatsLabel");
+        _passiveMicrobeConfig = new PassiveMicrobeConfig();
+        _passiveMicrobeSimulation = new PassiveMicrobeSimulation(_passiveMicrobeConfig);
+        _passiveMicrobeSimulation.SpawnInitial(_nutrientField, _random);
+        _passiveMicrobeVisualization = GetNodeOrNull<PassiveMicrobeVisualization>("PassiveMicrobeVisualization");
+        _passiveMicrobeVisualization?.Initialize(_passiveMicrobeSimulation, _passiveMicrobeConfig);
 
-        GD.Print($"PetriSeed Phase 1A ready. Seed={_random.Seed}, TickRate={_tickLoop.TicksPerSecond:0.##}/s");
+        GD.Print($"PetriSeed Phase 1B ready. Seed={_random.Seed}, TickRate={_tickLoop.TicksPerSecond:0.##}/s");
         PrintNutrientTelemetry();
     }
 
@@ -79,7 +88,13 @@ public partial class SimulationManager : Node2D
     private void RunSimulationTick()
     {
         _nutrientField?.Tick();
+        if (_nutrientField is not null)
+        {
+            _passiveMicrobeSimulation?.Tick(_nutrientField, _random);
+        }
+
         _nutrientVisualization?.OnSimulationTick();
+        _passiveMicrobeVisualization?.OnSimulationTick();
 
         if (_tickLoop.TickCount % (ulong)_nutrientFieldConfig.TelemetryIntervalTicks == 0UL)
         {
@@ -94,10 +109,14 @@ public partial class SimulationManager : Node2D
             return;
         }
 
+        var aliveCount = _passiveMicrobeSimulation?.AliveCount ?? 0;
+        var averageEnergy = _passiveMicrobeSimulation?.AverageEnergy ?? 0.0f;
+        var deathCount = _passiveMicrobeSimulation?.DeathCount ?? 0;
         var logMessage =
             $"Tick {_tickLoop.TickCount}: total nutrients={_nutrientField.TotalNutrients:0.000}, " +
             $"average={_nutrientField.AverageNutrients:0.000}, " +
-            $"diffusion delta={_nutrientField.DiffusionDeltaLastTick:0.000}";
+            $"diffusion delta={_nutrientField.DiffusionDeltaLastTick:0.000}, " +
+            $"microbes alive={aliveCount}, average energy={averageEnergy:0.000}, deaths={deathCount}";
 
         GD.Print(logMessage);
 
@@ -107,7 +126,10 @@ public partial class SimulationManager : Node2D
                 $"Tick Count: {_tickLoop.TickCount}\n" +
                 $"Total Nutrients: {_nutrientField.TotalNutrients:0.000}\n" +
                 $"Average Nutrients: {_nutrientField.AverageNutrients:0.000}\n" +
-                $"Diffusion Delta: {_nutrientField.DiffusionDeltaLastTick:0.000}";
+                $"Diffusion Delta: {_nutrientField.DiffusionDeltaLastTick:0.000}\n" +
+                $"Microbes Alive: {aliveCount}\n" +
+                $"Average Energy: {averageEnergy:0.000}\n" +
+                $"Starvation Deaths: {deathCount}";
         }
     }
 }
