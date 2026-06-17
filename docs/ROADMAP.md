@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap follows the clean-room reuse plan. Phase 1A establishes the first field simulation layer without adding organisms.
+This roadmap follows the clean-room reuse plan. Phase 1B adds passive microbes without reproduction, mutation, genetics, or species.
 
 ## Phase 0: Project Shell
 
@@ -19,22 +19,30 @@ This roadmap follows the clean-room reuse plan. Phase 1A establishes the first f
 - Nutrient density visualization.
 - Debug telemetry for total nutrients, average nutrients, and diffusion movement.
 
-## Phase 1B: Field Tools and Debug Controls
+## Phase 1B: Passive Microbes
+
+- Spawn passive microbes.
+- Wander inside the circular dish.
+- Sense nearby nutrients.
+- Consume nutrients and store energy.
+- Die from starvation.
+- Visualize microbes and energy.
+
+## Phase 1C: Field Tools and Debug Controls
 
 - Paintable food.
 - Field reset controls.
 - Configurable display modes.
 
-## Phase 1C: Additional Fields
+## Phase 1D: Additional Fields
 
 - Toxin grid.
 - Waste grid.
 - Heat and pH stress placeholders.
 
-## Phase 2: Microbes
+## Phase 2: Active Microbe Life Cycle
 
-- Spawn microbes.
-- Movement, energy, eating, aging, death, and asexual reproduction.
+- Aging, asexual reproduction, and life-cycle tuning.
 
 ## Phase 3: Genetics
 

@@ -42,6 +42,10 @@ public sealed class NutrientField
 
     public float DiffusionDeltaLastTick { get; private set; }
 
+    public Vector2 DishCenterWorld => Vector2.Zero;
+
+    public float DishRadiusWorld => (Mathf.Min(_config.Width, _config.Height) * _config.CellSizePixels * 0.5f) - _config.CellSizePixels;
+
     public bool IsInsideDish(int x, int y)
     {
         if (!Contains(x, y))
@@ -71,6 +75,41 @@ public sealed class NutrientField
         }
 
         return GetCell(x, y).nutrientAmount;
+    }
+
+    public Vector2 GetCellCenterWorld(int x, int y)
+    {
+        var origin = GetWorldOrigin();
+
+        return origin + new Vector2(
+            (x + 0.5f) * _config.CellSizePixels,
+            (y + 0.5f) * _config.CellSizePixels);
+    }
+
+    public bool TryGetCellAtWorld(Vector2 worldPosition, out int cellX, out int cellY)
+    {
+        var localPosition = worldPosition - GetWorldOrigin();
+
+        cellX = Mathf.FloorToInt(localPosition.X / _config.CellSizePixels);
+        cellY = Mathf.FloorToInt(localPosition.Y / _config.CellSizePixels);
+
+        return IsInsideDish(cellX, cellY);
+    }
+
+    public float ConsumeNutrientsAtWorld(Vector2 worldPosition, float requestedAmount)
+    {
+        if (requestedAmount <= 0.0f || !TryGetCellAtWorld(worldPosition, out var cellX, out var cellY))
+        {
+            return 0.0f;
+        }
+
+        var cell = GetCell(cellX, cellY);
+        var consumedAmount = Mathf.Min(cell.nutrientAmount, requestedAmount);
+        cell.nutrientAmount -= consumedAmount;
+
+        UpdateTelemetry();
+
+        return consumedAmount;
     }
 
     public void Tick()
@@ -220,6 +259,13 @@ public sealed class NutrientField
     private bool Contains(int x, int y)
     {
         return x >= 0 && y >= 0 && x < _config.Width && y < _config.Height;
+    }
+
+    private Vector2 GetWorldOrigin()
+    {
+        return new Vector2(
+            -(_config.Width * _config.CellSizePixels) * 0.5f,
+            -(_config.Height * _config.CellSizePixels) * 0.5f);
     }
 
     private int ToIndex(int x, int y)
