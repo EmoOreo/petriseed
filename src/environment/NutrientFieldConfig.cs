@@ -2,11 +2,11 @@ namespace PetriSeed.Environment;
 
 public sealed class NutrientFieldConfig
 {
-    public int Width { get; init; } = 64;
+    public int Width { get; init; } = 72;
 
-    public int Height { get; init; } = 36;
+    public int Height { get; init; } = 72;
 
-    public float CellSizePixels { get; init; } = 10.0f;
+    public float CellSizePixels { get; init; } = 8.0f;
 
     public float StartingNutrientAmount { get; init; } = 0.0f;
 
@@ -16,7 +16,7 @@ public sealed class NutrientFieldConfig
 
     public float BaseDecayRate { get; init; } = 0.0005f;
 
-    public float DiffusionRate { get; init; } = 0.18f;
+    public float DiffusionRate { get; init; } = 0.22f;
 
     public int InitialPatchCount { get; init; } = 7;
 

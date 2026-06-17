@@ -17,10 +17,14 @@ public sealed class NutrientField
 
         for (var index = 0; index < _cells.Length; index++)
         {
+            var x = index % _config.Width;
+            var y = index / _config.Width;
+            var isInsideDish = IsInsideDish(x, y);
+
             _cells[index] = new NutrientCell(
-                _config.StartingNutrientAmount,
-                _config.BaseRegenerationRate,
-                _config.BaseDecayRate);
+                isInsideDish ? _config.StartingNutrientAmount : 0.0f,
+                isInsideDish ? _config.BaseRegenerationRate : 0.0f,
+                isInsideDish ? _config.BaseDecayRate : 0.0f);
         }
 
         AddSeededNutrientPatches(random);
@@ -38,6 +42,22 @@ public sealed class NutrientField
 
     public float DiffusionDeltaLastTick { get; private set; }
 
+    public bool IsInsideDish(int x, int y)
+    {
+        if (!Contains(x, y))
+        {
+            return false;
+        }
+
+        var centerX = (_config.Width - 1) * 0.5f;
+        var centerY = (_config.Height - 1) * 0.5f;
+        var radius = (Mathf.Min(_config.Width, _config.Height) * 0.5f) - 1.0f;
+        var dx = x - centerX;
+        var dy = y - centerY;
+
+        return ((dx * dx) + (dy * dy)) <= radius * radius;
+    }
+
     public NutrientCell GetCell(int x, int y)
     {
         return _cells[ToIndex(x, y)];
@@ -45,7 +65,7 @@ public sealed class NutrientField
 
     public float GetNutrientAmount(int x, int y)
     {
-        if (!Contains(x, y))
+        if (!IsInsideDish(x, y))
         {
             return 0.0f;
         }
@@ -68,7 +88,7 @@ public sealed class NutrientField
         {
             for (var x = centerX - radius; x <= centerX + radius; x++)
             {
-                if (!Contains(x, y))
+                if (!IsInsideDish(x, y))
                 {
                     continue;
                 }
@@ -97,10 +117,26 @@ public sealed class NutrientField
 
     private void AddSeededNutrientPatches(RandomNumberService random)
     {
+        AddNutrients(_config.Width / 2, _config.Height / 2, _config.InitialPatchRadius + 1, _config.InitialPatchAmount);
+
         for (var patchIndex = 0; patchIndex < _config.InitialPatchCount; patchIndex++)
         {
-            var centerX = random.Range(_config.InitialPatchRadius, _config.Width - _config.InitialPatchRadius);
-            var centerY = random.Range(_config.InitialPatchRadius, _config.Height - _config.InitialPatchRadius);
+            var centerX = _config.Width / 2;
+            var centerY = _config.Height / 2;
+
+            for (var attempt = 0; attempt < 64; attempt++)
+            {
+                var candidateX = random.Range(_config.InitialPatchRadius, _config.Width - _config.InitialPatchRadius);
+                var candidateY = random.Range(_config.InitialPatchRadius, _config.Height - _config.InitialPatchRadius);
+
+                if (IsInsideDish(candidateX, candidateY))
+                {
+                    centerX = candidateX;
+                    centerY = candidateY;
+                    break;
+                }
+            }
+
             AddNutrients(centerX, centerY, _config.InitialPatchRadius, _config.InitialPatchAmount);
         }
     }
@@ -110,6 +146,12 @@ public sealed class NutrientField
         for (var index = 0; index < _cells.Length; index++)
         {
             var cell = _cells[index];
+            if (!IsInsideDish(index % _config.Width, index / _config.Width))
+            {
+                _nextAmounts[index] = 0.0f;
+                continue;
+            }
+
             var decayed = cell.nutrientAmount * (1.0f - cell.decayRate);
             var regenerated = decayed + cell.regenerationRate;
 
@@ -148,6 +190,12 @@ public sealed class NutrientField
 
     private void DiffusePair(int firstIndex, int secondIndex, float diffusionRate)
     {
+        if (!IsInsideDish(firstIndex % _config.Width, firstIndex / _config.Width) ||
+            !IsInsideDish(secondIndex % _config.Width, secondIndex / _config.Width))
+        {
+            return;
+        }
+
         var difference = _nextAmounts[firstIndex] - _nextAmounts[secondIndex];
         var flow = difference * diffusionRate;
 

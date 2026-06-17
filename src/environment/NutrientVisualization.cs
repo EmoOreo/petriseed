@@ -30,22 +30,55 @@ public partial class NutrientVisualization : Node2D
             return;
         }
 
-        var cellSize = new Vector2(_config.CellSizePixels, _config.CellSizePixels);
-        var origin = new Vector2(
-            -(_field.Width * _config.CellSizePixels) * 0.5f,
-            -(_field.Height * _config.CellSizePixels) * 0.5f);
+        DrawDishBackdrop(_field, _config);
+        DrawNutrients(_field, _config);
+        DrawDishRim(_field, _config);
+    }
 
-        for (var y = 0; y < _field.Height; y++)
+    private void DrawDishBackdrop(NutrientField field, NutrientFieldConfig config)
+    {
+        var radius = GetDishRadius(field, config);
+
+        DrawCircle(Vector2.Zero, radius + 12.0f, new Color(0.78f, 0.95f, 1.0f, 0.18f));
+        DrawCircle(Vector2.Zero, radius + 4.0f, new Color(0.02f, 0.035f, 0.05f, 1.0f));
+    }
+
+    private void DrawNutrients(NutrientField field, NutrientFieldConfig config)
+    {
+        var cellSize = new Vector2(config.CellSizePixels, config.CellSizePixels);
+        var origin = new Vector2(
+            -(field.Width * config.CellSizePixels) * 0.5f,
+            -(field.Height * config.CellSizePixels) * 0.5f);
+
+        for (var y = 0; y < field.Height; y++)
         {
-            for (var x = 0; x < _field.Width; x++)
+            for (var x = 0; x < field.Width; x++)
             {
-                var amount = _field.GetNutrientAmount(x, y);
-                var density = Mathf.Clamp(amount / _field.MaximumNutrientAmount, 0.0f, 1.0f);
-                var position = origin + new Vector2(x * _config.CellSizePixels, y * _config.CellSizePixels);
+                if (!field.IsInsideDish(x, y))
+                {
+                    continue;
+                }
+
+                var amount = field.GetNutrientAmount(x, y);
+                var density = Mathf.Clamp(amount / field.MaximumNutrientAmount, 0.0f, 1.0f);
+                var position = origin + new Vector2(x * config.CellSizePixels, y * config.CellSizePixels);
 
                 DrawRect(new Rect2(position, cellSize), GetColorForDensity(density));
             }
         }
+    }
+
+    private void DrawDishRim(NutrientField field, NutrientFieldConfig config)
+    {
+        var radius = GetDishRadius(field, config);
+
+        DrawArc(Vector2.Zero, radius + 4.0f, 0.0f, Mathf.Tau, 160, new Color(0.75f, 0.95f, 1.0f, 0.8f), 5.0f);
+        DrawArc(Vector2.Zero, radius - 3.0f, 0.0f, Mathf.Tau, 160, new Color(0.18f, 0.4f, 0.8f, 0.45f), 2.0f);
+    }
+
+    private float GetDishRadius(NutrientField field, NutrientFieldConfig config)
+    {
+        return Mathf.Min(field.Width, field.Height) * config.CellSizePixels * 0.5f;
     }
 
     private Color GetColorForDensity(float density)
