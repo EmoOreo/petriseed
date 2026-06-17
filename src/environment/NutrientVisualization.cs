@@ -14,6 +14,7 @@ public partial class NutrientVisualization : Node2D
     {
         _field = field;
         _config = config;
+        ZIndex = 10;
         QueueRedraw();
     }
 
@@ -54,12 +55,21 @@ public partial class NutrientVisualization : Node2D
             return new Color(density, density, density, 1.0f);
         }
 
-        var low = new Color(0.04f, 0.06f, 0.05f, 1.0f);
-        var mid = new Color(0.18f, 0.55f, 0.28f, 1.0f);
-        var high = new Color(0.95f, 0.9f, 0.35f, 1.0f);
+        var low = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+        var mid = new Color(0.0f, 0.25f, 1.0f, 1.0f);
+        var high = new Color(1.0f, 0.95f, 0.2f, 1.0f);
+        var peak = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-        return density < 0.5f
-            ? low.Lerp(mid, density * 2.0f)
-            : mid.Lerp(high, (density - 0.5f) * 2.0f);
+        if (density < 0.5f)
+        {
+            return low.Lerp(mid, density * 2.0f);
+        }
+
+        if (density < 0.85f)
+        {
+            return mid.Lerp(high, (density - 0.5f) / 0.35f);
+        }
+
+        return high.Lerp(peak, (density - 0.85f) / 0.15f);
     }
 }

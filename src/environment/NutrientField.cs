@@ -81,8 +81,12 @@ public sealed class NutrientField
                 }
 
                 var cell = GetCell(x, y);
+                var distance = Mathf.Sqrt((dx * dx) + (dy * dy));
+                var falloff = 1.0f - Mathf.Clamp(distance / Mathf.Max(radius, 1), 0.0f, 1.0f);
+                var weightedAmount = amount * Mathf.Lerp(0.35f, 1.0f, falloff);
+
                 cell.nutrientAmount = Mathf.Clamp(
-                    cell.nutrientAmount + amount,
+                    cell.nutrientAmount + weightedAmount,
                     0.0f,
                     _config.MaximumNutrientAmount);
             }

@@ -94,16 +94,20 @@ public partial class SimulationManager : Node2D
             return;
         }
 
-        var message =
+        var logMessage =
             $"Tick {_tickLoop.TickCount}: total nutrients={_nutrientField.TotalNutrients:0.000}, " +
             $"average={_nutrientField.AverageNutrients:0.000}, " +
             $"diffusion delta={_nutrientField.DiffusionDeltaLastTick:0.000}";
 
-        GD.Print(message);
+        GD.Print(logMessage);
 
         if (_nutrientStatsLabel is not null)
         {
-            _nutrientStatsLabel.Text = message;
+            _nutrientStatsLabel.Text =
+                $"Tick Count: {_tickLoop.TickCount}\n" +
+                $"Total Nutrients: {_nutrientField.TotalNutrients:0.000}\n" +
+                $"Average Nutrients: {_nutrientField.AverageNutrients:0.000}\n" +
+                $"Diffusion Delta: {_nutrientField.DiffusionDeltaLastTick:0.000}";
         }
     }
 }
